@@ -9,13 +9,14 @@ import net.danlew.wordle.algorithm.Solver
  */
 fun Solver.runAllGames(
   wordList: List<String>,
+  targets: List<String>,
   hardMode: Boolean,
   maxGuesses: Int = 6
 ): List<Int> {
   val results = MutableList(maxGuesses + 1) { 0 }
 
-  for (target in wordList) {
-    val numGuesses = runGame(target, wordList, hardMode, maxGuesses)
+  for (target in targets) {
+    val numGuesses = runGame(target, wordList, targets, hardMode, maxGuesses)
     results[numGuesses]++
   }
 
@@ -30,13 +31,15 @@ fun Solver.runAllGames(
 fun Solver.runGame(
   target: String,
   wordList: List<String>,
+  targets: List<String>,
   hardMode: Boolean,
   maxGuesses: Int = 6
 ): Int {
   var wordPool = wordList
+  var targetPool = targets
   val guessResults = mutableListOf<GuessResult>()
   for (round in 0 until maxGuesses) {
-    val guess = nextGuess(wordPool, guessResults)
+    val guess = nextGuess(wordPool, targetPool, guessResults)
     val hints = evaluateGuess(guess, target)
 
     if (hints.solved) {
@@ -48,6 +51,7 @@ fun Solver.runGame(
     // Narrow the word pool to all remaining valid guesses
     if (hardMode) {
       wordPool = filterValidHardModeGuesses(wordPool, guessResults.last())
+      targetPool = filterValidHardModeGuesses(targetPool, guessResults.last())
     }
   }
 

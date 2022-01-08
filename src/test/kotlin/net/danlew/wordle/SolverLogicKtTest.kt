@@ -28,6 +28,13 @@ class SolverLogicKtTest {
   }
 
   @Test
+  fun couldNotMatchBecauseMisplacedNotPresentFasthPath() {
+    assertFalse(
+      GuessResult("abc", listOf(UNUSED, CORRECT, MISPLACED)).couldMatch("xbz", true)
+    )
+  }
+
+  @Test
   fun couldNotMatchBecauseMisplacedInCorrectSpot() {
     assertFalse(
       GuessResult("abc", listOf(UNUSED, CORRECT, MISPLACED)).couldMatch("zbc")
@@ -38,6 +45,13 @@ class SolverLogicKtTest {
   fun couldNotMatchBecauseUnusedLetterPresent() {
     assertFalse(
       GuessResult("abc", listOf(UNUSED, CORRECT, MISPLACED)).couldMatch("cba")
+    )
+  }
+
+  @Test
+  fun couldNotMatchBecauseUnusedLetterPresentFastPath() {
+    assertFalse(
+      GuessResult("abc", listOf(UNUSED, CORRECT, MISPLACED)).couldMatch("cba", true)
     )
   }
 

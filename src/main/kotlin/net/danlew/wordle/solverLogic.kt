@@ -1,7 +1,7 @@
 package net.danlew.wordle
 
 /** @return true if the last guess *could* match the target */
-fun GuessResult.couldMatch(target: String): Boolean {
+fun GuessResult.couldMatch(target: String, noGuessDupes: Boolean = false): Boolean {
   require(guess.length == target.length)
 
   val misplacedGuessLetters = mutableListOf<Char>()
@@ -20,11 +20,21 @@ fun GuessResult.couldMatch(target: String): Boolean {
           return false
         }
 
+        // Fastpath w/ hint
+        if (noGuessDupes && guess[index] !in target) {
+          return false
+        }
+
         misplacedGuessLetters.add(guess[index])
         remainingTargetLetters.add(target[index])
       }
       Hint.UNUSED -> {
         if (guess[index] == target[index]) {
+          return false
+        }
+
+        // Fastpath w/ hint
+        if (noGuessDupes && guess[index] in target) {
           return false
         }
 

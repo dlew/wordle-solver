@@ -46,7 +46,9 @@ fun Solver.runGame(
     guessResults.add(GuessResult(guess, hints))
 
     // Narrow the word pool to all remaining valid guesses
-    wordPool = wordList.filter { guess -> validGuess(guess, wordList, hardMode, guessResults.last()) }
+    if (hardMode) {
+      wordPool = filterValidHardModeGuesses(wordPool, guessResults.last())
+    }
   }
 
   return 0

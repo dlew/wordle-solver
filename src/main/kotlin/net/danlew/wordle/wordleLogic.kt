@@ -1,40 +1,33 @@
 package net.danlew.wordle
 
-fun validGuess(
-  guess: String,
-  wordList: List<String>,
-  hardMode: Boolean = false,
-  lastGuess: GuessResult? = null
-): Boolean {
-  require(lastGuess == null || guess.length == lastGuess.guess.length)
+fun filterValidHardModeGuesses(wordList: List<String>, lastGuess: GuessResult): List<String> {
+  return wordList.filter { guess -> validHardModeGuess(guess, lastGuess) }
+}
 
-  if (guess !in wordList) {
-    return false
-  }
+fun validHardModeGuess(guess: String, lastGuess: GuessResult): Boolean {
+  require(guess.length == lastGuess.guess.length)
 
-  if (hardMode && lastGuess != null) {
-    val unusedGuessLetters = mutableListOf<Char>()
+  val unusedGuessLetters = mutableListOf<Char>()
 
-    // Verify all correct letters are still present
-    for (index in 0 until guess.length) {
-      if (lastGuess.hints[index] == Hint.CORRECT) {
-        if (guess[index] != lastGuess.guess[index]) {
-          return false
-        }
+  // Verify all correct letters are still present
+  for (index in guess.indices) {
+    if (lastGuess.hints[index] == Hint.CORRECT) {
+      if (guess[index] != lastGuess.guess[index]) {
+        return false
       }
-
-      // Gather the letters we can use
+    }
+    else {
       unusedGuessLetters.add(guess[index])
     }
+  }
 
-    // Verify misplaced letters are somewhere else
-    val misplacedLetters = lastGuess.hints.mapIndexedNotNull { index, hint ->
-      if (hint == Hint.MISPLACED) lastGuess.guess[index] else null
-    }
+  // Verify misplaced letters are somewhere else
+  val misplacedLetters = lastGuess.hints.mapIndexedNotNull { index, hint ->
+    if (hint == Hint.MISPLACED) lastGuess.guess[index] else null
+  }
 
-    if (!unusedGuessLetters.containsAll(misplacedLetters)) {
-      return false
-    }
+  if (!unusedGuessLetters.containsAll(misplacedLetters)) {
+    return false
   }
 
   return true

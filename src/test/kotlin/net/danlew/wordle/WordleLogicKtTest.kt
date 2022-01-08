@@ -7,22 +7,37 @@ import org.junit.Test
 class WordleLogicKtTest {
 
   @Test
-  fun guessValid() {
-    assertTrue(validGuess(guess = "abc", wordList = listOf("abc")))
+  fun filterValidHardModeGuessesCorrectly() {
+    assertEquals(
+      listOf("abc", "acb"),
+      filterValidHardModeGuesses(
+        listOf("abc", "def", "acb", "cab"),
+        lastGuess = GuessResult(
+          guess = "abc",
+          listOf(CORRECT, UNUSED, MISPLACED)
+        )
+      )
+    )
   }
 
   @Test
-  fun guessInvalidBecauseNotInWordList() {
-    assertFalse(validGuess(guess = "123456", wordList = listOf("abcdef")))
+  fun guessValidInHardMode() {
+    assertTrue(
+      validHardModeGuess(
+        guess = "ac",
+        lastGuess = GuessResult(
+          guess = "ab",
+          listOf(CORRECT, UNUSED)
+        )
+      )
+    )
   }
 
   @Test
-  fun guessInvalidBecauseHardMode() {
+  fun guessInvalidInHardMode() {
     assertFalse(
-      validGuess(
+      validHardModeGuess(
         guess = "ca",
-        wordList = listOf("ab", "ca"),
-        hardMode = true,
         lastGuess = GuessResult(
           guess = "ab",
           listOf(CORRECT, UNUSED)
@@ -30,15 +45,12 @@ class WordleLogicKtTest {
       )
     )
 
-    // It would have worked if not for hard mode
-    assertTrue(
-      validGuess(
-        guess = "ca",
-        wordList = listOf("ab", "ca"),
-        hardMode = false,
+    assertFalse(
+      validHardModeGuess(
+        guess = "caa",
         lastGuess = GuessResult(
-          guess = "ab",
-          listOf(CORRECT, UNUSED)
+          guess = "cbc",
+          listOf(CORRECT, UNUSED, MISPLACED)
         )
       )
     )

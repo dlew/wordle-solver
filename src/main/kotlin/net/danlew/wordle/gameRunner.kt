@@ -1,6 +1,8 @@
 package net.danlew.wordle
 
 import net.danlew.wordle.algorithm.Solver
+import java.util.concurrent.Callable
+import java.util.concurrent.Executors
 
 /**
  * Runs every word in [wordList] as the target against a [Solver].
@@ -13,14 +15,31 @@ fun Solver.runAllGames(
   hardMode: Boolean,
   maxGuesses: Int = 6
 ): List<Int> {
-  val results = MutableList(maxGuesses + 1) { 0 }
+  // Chunk up work and then run in parallel to reduce processing time
+  val availableProcessors = Runtime.getRuntime().availableProcessors()
 
-  for (target in targets) {
-    val numGuesses = runGame(target, wordList, targets, hardMode, maxGuesses)
-    results[numGuesses]++
+  val threadPool = Executors.newFixedThreadPool(availableProcessors)
+
+  val tasks = targets.chunked(availableProcessors).map {
+    Callable {
+      val results = MutableList(maxGuesses + 1) { 0 }
+      for (target in it) {
+        val numGuesses = runGame(target, wordList, targets, hardMode, maxGuesses)
+        results[numGuesses]++
+      }
+      return@Callable results
+    }
   }
 
-  return results
+  val result = threadPool.invokeAll(tasks)
+    .map { it.get() }
+    .fold(List(maxGuesses + 1) { 0 }) { acc, ints ->
+      acc.mapIndexed { index, i -> i + ints[index] }
+    }
+
+  threadPool.shutdown()
+
+  return result
 }
 
 /**

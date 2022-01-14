@@ -36,11 +36,11 @@ class KnuthSolver(
 
     val guessRankings = wordPool.map { guess ->
       var score = Int.MAX_VALUE
-      val noGuessDupes = guess.hasNoDuplicateCharacters()
+      val hitCounts = mutableMapOf<GuessResult, Int>().withDefault { 0 }
       for (possibleTarget in possibleTargets) {
         val guessResult = GuessResult(guess, evaluateGuess(guess, possibleTarget))
-        val numResults = possibleTargets.count { guessResult.couldMatch(it, noGuessDupes) }
-        score = minOf(score, targetSize - numResults)
+        hitCounts[guessResult] = hitCounts.getValue(guessResult) + 1
+        score = minOf(score, targetSize - hitCounts.getValue(guessResult))
       }
       return@map GuessScore(guess, score)
     }.sortedByDescending { it.score }
@@ -51,8 +51,6 @@ class KnuthSolver(
     val guesses = guessRankings.takeWhile { it.score == maxScore }
     return (guesses.find { it.guess in possibleTargets } ?: guesses.first()).guess
   }
-
-  private fun String.hasNoDuplicateCharacters() = chars().distinct().count().toInt() == length
 
   private data class GuessScore(val guess: String, val score: Int)
 
